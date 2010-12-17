@@ -1,21 +1,56 @@
 package com.temnenkov.jjbot;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
 import org.jivesoftware.smack.XMPPException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.util.StatusPrinter;
 
 public class Application {
 
-	public static void main(String[] args) {
+	private static Logger logger = LoggerFactory
+	.getLogger(Application.class);	
+	
+	public static void main(String[] args) throws FileNotFoundException {
 
+		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+		JoranConfigurator configurator = null;
+		try {
+			configurator = new JoranConfigurator();
+			configurator.setContext(lc);
+			lc.reset();
+			configurator.doConfigure("logback.xml");
+		} 
+		catch (JoranException e) {
+			logger.warn("fail process logback.xml", e);
+			try {
+				if (configurator != null)
+					configurator.doConfigure("/opt/jjbot/logback.xml");
+				else{
+					logger.error("fail process /opt/jjbot/logback.xml", e);
+					return;					
+				}
+			} catch (JoranException e1) {
+				logger.error("fail process /opt/jjbot/logback.xml", e);
+				return;
+			}
+		}
+		StatusPrinter.printInCaseOfErrorsOrWarnings(lc);
+		
 		Properties prop = getPropertiesFile("bot.properties");
 		if (prop == null)
 			prop = getPropertiesFile("/opt/jjbot/bot.properties");
 		
 		if (prop == null){
-			System.out.println("bot.properties not found");
+			logger.error("bot.properties not found");
 			return;
 		}
 
@@ -24,10 +59,10 @@ public class Application {
 		try {
 			bot.start();
 		} catch (XMPPException e) {
-			e.printStackTrace();
+			logger.error("XMPPException", e);
 			return;
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			logger.error("InterruptedException", e);
 			return;
 		}
 	}
