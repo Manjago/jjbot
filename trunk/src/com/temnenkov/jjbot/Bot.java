@@ -6,6 +6,8 @@ import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Bot {
 
@@ -15,6 +17,9 @@ public class Bot {
 	private String password;
 	private String tester;
 
+	private Logger logger = LoggerFactory
+	.getLogger(getClass());	
+	
 	public Bot(String username, String password, String tester) {
 		this.username = username;
 		this.password = password;
@@ -34,7 +39,21 @@ public class Bot {
 
 			@Override
 		    public void processMessage(Chat chat, Message message) {
-		        System.out.println("Received message: " + message);
+				
+				String logMessage = Helper.toString(message);
+				
+				logger.trace("Received message: " + logMessage);
+				String logNewMessage = "";
+				try {
+					
+				    Message newMsg = Helper.createChatMessage(chat.getParticipant(), "Рур, " + Helper.safeStr(message.getBody()));
+				    logNewMessage = newMsg.getTo() + ":" + newMsg.getBody();
+					
+					chat.sendMessage(newMsg);
+					logger.trace("Send message: " + logNewMessage);
+				} catch (XMPPException e) {
+					logger.error("fail send message \"" + logNewMessage + "\"", e);
+				}
 		    }
 
 		});
