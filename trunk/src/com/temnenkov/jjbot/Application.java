@@ -56,7 +56,7 @@ public class Application {
 
 		try {
 			Bot.start(prop.getProperty("login"), prop.getProperty("password"),
-					prop.getProperty("tester"), prop.getProperty("tester"),
+					prop.getProperty("tester"), prop.getProperty("operator"),
 					prop.getProperty("room"), prop.getProperty("roomnick"));
 		} catch (XMPPException e) {
 			logger.error("XMPPException", e);
