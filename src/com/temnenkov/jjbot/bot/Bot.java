@@ -17,6 +17,8 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.temnenkov.jjbot.Helper;
+
 public class Bot implements PacketListener {
 
 	private final String password;
@@ -91,7 +93,7 @@ public class Bot implements PacketListener {
 		history.setMaxStanzas(5);
 		muc2.join(roomnick, "", history, SmackConfiguration
 				.getPacketReplyTimeout());
-		logger.info("join room " + room + "as " + roomnick + " ok");
+		logger.info("join room " + room + " as " + roomnick + " ok");
 
 	}
 
@@ -137,14 +139,23 @@ public class Bot implements PacketListener {
 				+ message.getBody());
 
 		// принимаем только от оператора
-		{
-			if (message.getFrom() == null)
-				return;
-			String msg = message.getFrom().toLowerCase();
-			if (!msg.startsWith(user) && !msg.startsWith(user2))
-				return;
-		}
+		if (message.getFrom() == null)
+			return;
+		String msg = message.getFrom().toLowerCase();
+		if (!msg.startsWith(user) && !msg.startsWith(user2))
+			processGuest(message);
+		else
+			prosessOpers(message);
 
+	}
+
+	private void processGuest(Message message) {
+		logger.info("get msg from guest " + Helper.toString(message));
+		sendMessage(message.getFrom(), "under construction");
+		logger.info("send msg to guest - under construction");		
+	}
+
+	private void prosessOpers(Message message) {
 		String body = message.getBody();
 		if (body.contains("#on")) {
 			isActive = true;
@@ -166,7 +177,6 @@ public class Bot implements PacketListener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 
 }
