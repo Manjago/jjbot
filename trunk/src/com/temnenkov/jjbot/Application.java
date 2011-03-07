@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.temnenkov.jjbot.bot.Bot;
+import com.temnenkov.jjbot.util.Helper;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -54,6 +55,7 @@ public class Application {
 			return;
 		}
 
+		Helper.lameTrust();
 		try {
 			Bot.start(prop.getProperty("login"), prop.getProperty("password"),
 					prop.getProperty("tester"), prop.getProperty("operator"),
