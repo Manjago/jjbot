@@ -17,7 +17,8 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.temnenkov.jjbot.Helper;
+import com.temnenkov.jjbot.btcex.TickerInformer;
+import com.temnenkov.jjbot.util.Helper;
 
 public class Bot implements PacketListener {
 
@@ -151,8 +152,22 @@ public class Bot implements PacketListener {
 
 	private void processGuest(Message message) {
 		logger.info("get msg from guest " + Helper.toString(message));
-		sendMessage(message.getFrom(), "under construction");
-		logger.info("send msg to guest - under construction");		
+		String resp;
+		if (message.getBody() == null) {
+
+			resp = "Извините, я - глупый бот. Я пока что понимаю только команды WMR, JPY, RUB, YAD, WMZ, EUR, USD";
+
+		} else {
+			resp = TickerInformer.info(message.getBody());
+			if (resp == null)
+				resp = "Извините, я - глупый бот. Я ничего не знаю про валюту \""
+						+ message.getBody()
+						+ "\". Я пока что понимаю только команды WMR, JPY, RUB, YAD, WMZ, EUR, USD";
+
+		}
+
+		sendMessage(message.getFrom(), resp);
+
 	}
 
 	private void prosessOpers(Message message) {
