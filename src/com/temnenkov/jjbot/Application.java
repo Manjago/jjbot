@@ -9,7 +9,7 @@ import org.jivesoftware.smack.XMPPException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.temnenkov.jjbot.bot.Test;
+import com.temnenkov.jjbot.bot.Bot;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -55,7 +55,7 @@ public class Application {
 		}
 
 		try {
-			Test.start(prop.getProperty("login"), prop.getProperty("password"),
+			Bot.start(prop.getProperty("login"), prop.getProperty("password"),
 					prop.getProperty("tester"), prop.getProperty("tester"),
 					prop.getProperty("room"), prop.getProperty("roomnick"));
 		} catch (XMPPException e) {

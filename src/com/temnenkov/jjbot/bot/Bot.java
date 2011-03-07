@@ -17,7 +17,7 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Test implements PacketListener {
+public class Bot implements PacketListener {
 
 	private final String password;
 	private final String user;
@@ -40,7 +40,7 @@ public class Test implements PacketListener {
 
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
-	public Test(String username, String pwd, String listener, String operator,
+	public Bot(String username, String pwd, String listener, String operator,
 			String room, String roomnick) throws XMPPException {
 
 		this.password = pwd;
@@ -114,7 +114,7 @@ public class Test implements PacketListener {
 	public static void start(String username, String pwd, String listener,
 			String operator, String room, String roomnick)
 			throws XMPPException, InterruptedException {
-		Test messageSender = new Test(username, pwd, listener, operator, room,
+		Bot messageSender = new Bot(username, pwd, listener, operator, room,
 				roomnick);
 
 		messageSender.sendMessage(messageSender.getUser(), "type #on or #off");
