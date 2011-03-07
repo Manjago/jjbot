@@ -9,6 +9,8 @@ import org.jivesoftware.smack.XMPPException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.temnenkov.jjbot.bot.Test;
+
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
@@ -16,9 +18,8 @@ import ch.qos.logback.core.util.StatusPrinter;
 
 public class Application {
 
-	private static Logger logger = LoggerFactory
-	.getLogger(Application.class);	
-	
+	private static Logger logger = LoggerFactory.getLogger(Application.class);
+
 	public static void main(String[] args) throws FileNotFoundException {
 
 		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -28,15 +29,14 @@ public class Application {
 			configurator.setContext(lc);
 			lc.reset();
 			configurator.doConfigure("logback.xml");
-		} 
-		catch (JoranException e) {
+		} catch (JoranException e) {
 			logger.warn("fail process logback.xml", e);
 			try {
 				if (configurator != null)
 					configurator.doConfigure("/opt/jjbot/logback.xml");
-				else{
+				else {
 					logger.error("fail process /opt/jjbot/logback.xml", e);
-					return;					
+					return;
 				}
 			} catch (JoranException e1) {
 				logger.error("fail process /opt/jjbot/logback.xml", e);
@@ -44,20 +44,20 @@ public class Application {
 			}
 		}
 		StatusPrinter.printInCaseOfErrorsOrWarnings(lc);
-		
+
 		Properties prop = getPropertiesFile("bot.properties");
 		if (prop == null)
 			prop = getPropertiesFile("/opt/jjbot/bot.properties");
-		
-		if (prop == null){
+
+		if (prop == null) {
 			logger.error("bot.properties not found");
 			return;
 		}
 
-		Bot bot = new Bot(prop.getProperty("login"), prop
-		.getProperty("password"), prop.getProperty("tester"));
 		try {
-			bot.start();
+			Test.start(prop.getProperty("login"), prop.getProperty("password"),
+					prop.getProperty("tester"), prop.getProperty("tester"),
+					prop.getProperty("room"), prop.getProperty("roomnick"));
 		} catch (XMPPException e) {
 			logger.error("XMPPException", e);
 			return;

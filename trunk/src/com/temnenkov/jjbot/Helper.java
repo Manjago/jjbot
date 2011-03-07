@@ -24,10 +24,13 @@ public class Helper {
 	}
 	
 	public static String extractUser(String str){
-		return str;
+		if (isEmpty(str)) return "";
+		int pos = str.indexOf("/");
+		if (pos < 0) return "";
+		else return str.substring(0, pos);
 	}
 	
 	public static boolean isEmpty(String str){
-		return false;
+		return (str == null) || (str.length() == 0) ;
 	}
 }
