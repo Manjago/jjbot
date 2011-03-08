@@ -12,7 +12,10 @@ public class Helper {
 		if (msg == null)
 			return "null";
 
-		return safeStr(msg.getFrom()) + ":" + safeStr(msg.getBody());
+		return safeStr(msg.getFrom())
+				+ ":"
+				+ safeStr(msg.getBody()
+						+ (isDelayedMessage(msg) ? " (delayed)" : ""));
 	}
 
 	public static String safeStr(String str) {
@@ -36,6 +39,16 @@ public class Helper {
 			return "";
 		else
 			return str.substring(0, pos);
+	}
+
+	public static String extractRoomNick(String str) {
+		if (isEmpty(str))
+			return "";
+		int pos = str.indexOf("/");
+		if (pos < 0)
+			return "";
+		else
+			return str.substring(pos + 1);
 	}
 
 	public static boolean isEmpty(String str) {
@@ -67,5 +80,9 @@ public class Helper {
 		} catch (Exception e) {
 		}
 
+	}
+
+	public static boolean isDelayedMessage(Message msg) {
+		return msg.getExtension("delay", "urn:xmpp:delay") != null;
 	}
 }

@@ -1,5 +1,6 @@
 package com.temnenkov.jjbot.bot;
 
+import java.sql.SQLException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -12,6 +13,7 @@ import org.jivesoftware.smack.filter.MessageTypeFilter;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smackx.muc.DiscussionHistory;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.slf4j.Logger;
@@ -24,6 +26,9 @@ public class Bot implements PacketListener {
 
 	private final String password;
 	private final String user;
+	private final LogManager logManager;
+	private final String room;
+	
 
 	public String getUser() {
 		return user;
@@ -44,11 +49,16 @@ public class Bot implements PacketListener {
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	public Bot(String username, String pwd, String listener, String operator,
-			String room, String roomnick) throws XMPPException {
+			final String room, String roomnick) throws XMPPException, SQLException, ClassNotFoundException {
 
+		logManager = new LogManager();
+		logManager.init();
+		logger.info("database ok");
+		
 		this.password = pwd;
 		this.user = listener;
 		this.user2 = operator;
+		this.room = room;
 
 		queue = new ConcurrentLinkedQueue<Info>();
 
@@ -84,6 +94,14 @@ public class Bot implements PacketListener {
 				Message message = (Message) packet;
 
 				System.out.println(message.getFrom() + ":" + message.getBody());
+				try {
+					logManager.storeMsg(room, message.getFrom(), message.getBody(), Helper.isDelayedMessage(message));
+					
+					logger.debug("store msg " + Helper.toString(message));
+				} catch (SQLException e) {
+					logger.error("can not store message", e);
+					return;
+				}
 
 				if (isActive)
 					queue.add(new Info(message.getFrom(), message.getBody()));
@@ -116,7 +134,7 @@ public class Bot implements PacketListener {
 
 	public static void start(String username, String pwd, String listener,
 			String operator, String room, String roomnick)
-			throws XMPPException, InterruptedException {
+			throws XMPPException, InterruptedException, SQLException, ClassNotFoundException {
 		Bot messageSender = new Bot(username, pwd, listener, operator, room,
 				roomnick);
 
