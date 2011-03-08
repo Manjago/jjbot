@@ -3,6 +3,7 @@ package com.temnenkov.jjbot;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Properties;
 
 import org.jivesoftware.smack.XMPPException;
@@ -65,6 +66,12 @@ public class Application {
 			return;
 		} catch (InterruptedException e) {
 			logger.error("InterruptedException", e);
+			return;
+		} catch (SQLException e) {
+			logger.error("SQLException", e);
+			return;
+		} catch (ClassNotFoundException e) {
+			logger.error("ClassNotFoundException", e);
 			return;
 		}
 	}
