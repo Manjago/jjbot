@@ -1,6 +1,7 @@
 package com.temnenkov.jjbot.bot;
 
 import java.sql.SQLException;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -165,7 +166,7 @@ public class Bot implements PacketListener {
 			resp = "»звините, € - глупый бот. ¬ведите команду HELP, пожалуйста.";
 
 		} else {		
-			InfoWithHint res = TickerInformer.info(message.getBody());
+			InfoWithHint res = TickerInformer.info(message.getBody().toUpperCase(new Locale("ru", "RU")));
 			if (res.getInfo() == null)
 				resp = "»звините, € - глупый бот. я ничего не знаю про валюту \""
 						+ message.getBody()
