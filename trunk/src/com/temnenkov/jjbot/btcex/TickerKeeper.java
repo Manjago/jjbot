@@ -46,4 +46,32 @@ public class TickerKeeper {
 		return "TickerKeeper [data=" + data + "]";
 	}
 
+	public String listCurr() {
+		StringBuilder sb = new StringBuilder();
+		for (Ticker i : getData()){
+			
+			if (sb.length() != 0)
+				sb.append(",\r\n");
+			
+			sb.append(i.getCurrency());
+			sb.append(" (курсы валюты \"");
+			sb.append(i.getCurrency_name());
+			sb.append("\")");
+		}
+		
+		return sb.toString();
+	}
+
+	public String allCurr() {
+		StringBuilder sb = new StringBuilder();
+		for (Ticker i : getData()){
+			
+			if (sb.length() != 0)
+				sb.append("\r\n");
+			
+			sb.append(i.toInfoString());
+		}
+		
+		return sb.toString();
+	}
 }
