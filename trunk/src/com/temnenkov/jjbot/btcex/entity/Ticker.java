@@ -1,4 +1,4 @@
-package com.temnenkov.jjbot.btcex;
+package com.temnenkov.jjbot.btcex.entity;
 
 public class Ticker {
 	private String currency;

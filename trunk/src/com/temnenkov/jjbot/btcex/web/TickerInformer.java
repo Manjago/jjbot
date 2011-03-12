@@ -1,4 +1,4 @@
-package com.temnenkov.jjbot.btcex;
+package com.temnenkov.jjbot.btcex.web;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,6 +8,9 @@ import net.sf.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.temnenkov.jjbot.btcex.entity.InfoWithHint;
+import com.temnenkov.jjbot.btcex.entity.Ticker;
+import com.temnenkov.jjbot.btcex.entity.TickerKeeper;
 import com.temnenkov.jjbot.util.HTTPRequestPoster;
 
 public class TickerInformer {
@@ -15,7 +18,7 @@ public class TickerInformer {
 			.getLogger(TickerInformer.class);
 
 	public static InfoWithHint info(String curr) {
-		logger.debug("get ifo about curr " + curr);
+		logger.debug("get info about curr " + curr);
 		String res = HTTPRequestPoster.sendGetRequest(
 				"https://btcex.com/ticker.json", "");
 		logger.debug("req ok = " + res);
