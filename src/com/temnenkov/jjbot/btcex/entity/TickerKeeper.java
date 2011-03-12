@@ -1,4 +1,4 @@
-package com.temnenkov.jjbot.btcex;
+package com.temnenkov.jjbot.btcex.entity;
 
 import java.util.List;
 

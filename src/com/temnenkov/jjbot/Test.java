@@ -10,7 +10,8 @@ import org.sqlite.SQLiteJDBCLoader;
 import net.sf.json.JSONObject;
 
 import com.temnenkov.jjbot.bot.LogManager;
-import com.temnenkov.jjbot.btcex.TickerKeeper;
+import com.temnenkov.jjbot.btcex.Pair;
+import com.temnenkov.jjbot.btcex.entity.TickerKeeper;
 import com.temnenkov.jjbot.util.HTTPRequestPoster;
 import com.temnenkov.jjbot.util.Helper;
 import java.sql.Connection;
@@ -29,9 +30,19 @@ public class Test {
 	 */
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		
-		LogManager lm = new LogManager();
-		lm.init();
-		lm.storeMsg("ggg", "hhh", "testo", false);
+		System.out.println(Pair.valueOf("YAD").getCode());
+		try
+		{
+			System.out.println(Pair.valueOf("1"));			
+		}
+		catch(IllegalArgumentException e)
+		{
+			System.out.println("!");
+		}
+		
+//		LogManager lm = new LogManager();
+//		lm.init();
+//		lm.storeMsg("ggg", "hhh", "testo", false);
 		
 //		Helper.lameTrust();
 //		String res = HTTPRequestPoster.sendGetRequest("https://btcex.com/ticker.json", "");
