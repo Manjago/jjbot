@@ -78,20 +78,22 @@ public class Bot implements PacketListener {
 		connection.addPacketListener((PacketListener) this, filter);
 		
 		String[] rooms = room.split(";");
+		String[] roomNicks = roomnick.split(";");
 		for(int i=0; i < rooms.length; ++i){
 			
 			String roomName = rooms[i];
+			String roomNick = roomNicks[i];
 			
 			MultiUserChat muc = new MultiUserChat(connection, roomName);
 
-			RoomPacketListener lstnr = new RoomPacketListener(logManager, roomnick, i == 0, i ==0 ? queue : null); 
+			RoomPacketListener lstnr = new RoomPacketListener(logManager, roomNick, i == 0, i ==0 ? queue : null); 
 			muc.addMessageListener(lstnr);
 
 			DiscussionHistory history = new DiscussionHistory();
 			history.setMaxStanzas(5);
-			muc.join(roomnick, "", history, SmackConfiguration
+			muc.join(roomNick, "", history, SmackConfiguration
 					.getPacketReplyTimeout());
-			logger.info("join room " + roomName + " as " + roomnick + " ok");
+			logger.info("join room " + roomName + " as " + roomNick + " ok");
 			
 			if (i == 0){
 				muc2 = muc;
