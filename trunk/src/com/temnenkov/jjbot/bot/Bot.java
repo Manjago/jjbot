@@ -13,7 +13,6 @@ import org.jivesoftware.smack.filter.MessageTypeFilter;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smackx.muc.DiscussionHistory;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.slf4j.Logger;
@@ -27,7 +26,6 @@ public class Bot implements PacketListener {
 	private final String password;
 	private final String user;
 	private final LogManager logManager;
-	private final String room;
 	
 
 	public String getUser() {
@@ -41,12 +39,11 @@ public class Bot implements PacketListener {
 	XMPPConnection connection;
 
 	private MultiUserChat muc2;
-
-	private boolean isActive;
+	private RoomPacketListener muc2Listen;
 
 	private static ConcurrentLinkedQueue<Info> queue;
 
-	private Logger logger = LoggerFactory.getLogger(getClass());
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	public Bot(String username, String pwd, String listener, String operator,
 			final String room, String roomnick) throws XMPPException, SQLException, ClassNotFoundException {
@@ -58,7 +55,6 @@ public class Bot implements PacketListener {
 		this.password = pwd;
 		this.user = listener;
 		this.user2 = operator;
-		this.room = room;
 
 		queue = new ConcurrentLinkedQueue<Info>();
 
@@ -80,39 +76,29 @@ public class Bot implements PacketListener {
 		// PacketFilter filter2 = new MessageTypeFilter(Message.Type.groupchat);
 
 		connection.addPacketListener((PacketListener) this, filter);
-		// connection.addPacketListener((PacketListener) this, filter2);
+		
+		String[] rooms = room.split(";");
+		for(int i=0; i < rooms.length; ++i){
+			
+			String roomName = rooms[i];
+			
+			MultiUserChat muc = new MultiUserChat(connection, roomName);
 
-		// Create a MultiUserChat using an XMPPConnection for a room
-		muc2 = new MultiUserChat(connection, room);
+			RoomPacketListener lstnr = new RoomPacketListener(logManager, roomnick, i == 0, i ==0 ? queue : null); 
+			muc.addMessageListener(lstnr);
 
-		// User2 joins the new room
-		// The room service will decide the amount of history to send
-
-		muc2.addMessageListener(new PacketListener() {
-
-			public void processPacket(Packet packet) {
-				Message message = (Message) packet;
-
-				System.out.println(message.getFrom() + ":" + message.getBody());
-				try {
-					logManager.storeMsg(room, message.getFrom(), message.getBody(), Helper.isDelayedMessage(message));
-					
-					logger.debug("store msg " + Helper.toString(message));
-				} catch (SQLException e) {
-					logger.error("can not store message", e);
-					return;
-				}
-
-				if (isActive)
-					queue.add(new Info(message.getFrom(), message.getBody()));
+			DiscussionHistory history = new DiscussionHistory();
+			history.setMaxStanzas(5);
+			muc.join(roomnick, "", history, SmackConfiguration
+					.getPacketReplyTimeout());
+			logger.info("join room " + roomName + " as " + roomnick + " ok");
+			
+			if (i == 0){
+				muc2 = muc;
+				muc2Listen = lstnr;
 			}
-		});
-
-		DiscussionHistory history = new DiscussionHistory();
-		history.setMaxStanzas(5);
-		muc2.join(roomnick, "", history, SmackConfiguration
-				.getPacketReplyTimeout());
-		logger.info("join room " + room + " as " + roomnick + " ok");
+		}		
+		
 
 	}
 
@@ -191,13 +177,16 @@ public class Bot implements PacketListener {
 	private void prosessOpers(Message message) {
 		String body = message.getBody();
 		if (body.contains("#on")) {
-			isActive = true;
+			
+			if (muc2Listen != null)
+				muc2Listen.setActive(true);
 			sendMessage(user, "listener on");
 			return;
 		}
 
 		if (body.contains("#off")) {
-			isActive = false;
+			if (muc2Listen != null)
+				muc2Listen.setActive(false);
 			sendMessage(user, "listener off");
 			return;
 		}
