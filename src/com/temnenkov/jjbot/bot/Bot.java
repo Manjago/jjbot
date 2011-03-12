@@ -18,6 +18,7 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.temnenkov.jjbot.btcex.InfoWithHint;
 import com.temnenkov.jjbot.btcex.TickerInformer;
 import com.temnenkov.jjbot.util.Helper;
 
@@ -161,14 +162,17 @@ public class Bot implements PacketListener {
 		String resp;
 		if (message.getBody() == null) {
 
-			resp = "»звините, € - глупый бот. я пока что понимаю только команды WMR, JPY, RUB, YAD, WMZ, EUR, USD";
+			resp = "»звините, € - глупый бот. ¬ведите команду HELP, пожалуйста.";
 
-		} else {
-			resp = TickerInformer.info(message.getBody());
-			if (resp == null)
+		} else {		
+			InfoWithHint res = TickerInformer.info(message.getBody());
+			if (res.getInfo() == null)
 				resp = "»звините, € - глупый бот. я ничего не знаю про валюту \""
 						+ message.getBody()
-						+ "\". я пока что понимаю только команды WMR, JPY, RUB, YAD, WMZ, EUR, USD";
+						+ "\".\r\nя пока что понимаю только команды \r\n" + res.getHint() +
+						",\r\nALL (курсы всех валют на бирже)";
+			else
+				resp = res.getInfo();
 
 		}
 
