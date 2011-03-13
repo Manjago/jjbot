@@ -12,8 +12,11 @@ public class Helper {
 		if (msg == null)
 			return "null";
 
-		return safeStr(msg.getFrom())
-				+ ":"
+		return "to:"
+				+ safeStr(msg.getTo())
+				+ ", from:"
+				+ safeStr(msg.getFrom())
+				+ ", body:"
 				+ safeStr(msg.getBody()
 						+ (isDelayedMessage(msg) ? " (delayed)" : ""));
 	}

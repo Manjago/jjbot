@@ -30,20 +30,10 @@ public class Application {
 			configurator = new JoranConfigurator();
 			configurator.setContext(lc);
 			lc.reset();
-			configurator.doConfigure("logback.xml");
+			configurator.doConfigure("/opt/jjbot/logback.xml");
 		} catch (JoranException e) {
-			logger.warn("fail process logback.xml", e);
-			try {
-				if (configurator != null)
-					configurator.doConfigure("/opt/jjbot/logback.xml");
-				else {
-					logger.error("fail process /opt/jjbot/logback.xml", e);
-					return;
-				}
-			} catch (JoranException e1) {
-				logger.error("fail process /opt/jjbot/logback.xml", e);
-				return;
-			}
+			logger.error("fail process /opt/jjbot/logback.xml", e);
+			return;
 		}
 		StatusPrinter.printInCaseOfErrorsOrWarnings(lc);
 
