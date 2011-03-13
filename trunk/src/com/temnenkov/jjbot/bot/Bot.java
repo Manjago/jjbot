@@ -136,12 +136,13 @@ public class Bot implements PacketListener {
 		Bot messageSender = new Bot(username, pwd, listener, operator, room,
 				roomnick);
 
-		messageSender.sendMessage(messageSender.getUser(), "type #on or #off");
+		// messageSender.sendMessage(messageSender.getUser(),
+		// "type #on or #off");
+		queue.add(new Info(InfoType.USER, messageSender.getUser(),
+				"type #on or #off"));
 
 		// messageSender.disconnect();
 		while (true) {
-			Thread.sleep(200);
-
 			Info i = queue.poll();
 			if (i != null) {
 
@@ -159,8 +160,9 @@ public class Bot implements PacketListener {
 					}
 					break;
 				}
-			}
-
+				Thread.sleep(15000);
+			} else
+				Thread.sleep(200);
 		}
 	}
 
