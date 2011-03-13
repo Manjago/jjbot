@@ -47,7 +47,6 @@ public class Bot implements PacketListener {
 	private RoomPacketListener muc2Listen;
 
 	private static ConcurrentLinkedQueue<Info> queue;
-	private static ConcurrentLinkedQueue<Info> queue2;
 
 	private final static Logger logger = LoggerFactory.getLogger(Bot.class);
 
@@ -66,7 +65,6 @@ public class Bot implements PacketListener {
 		this.user2 = operator;
 
 		queue = new ConcurrentLinkedQueue<Info>();
-		queue2 = new ConcurrentLinkedQueue<Info>();
 
 		connConfig = new ConnectionConfiguration("talk.google.com", 5222,
 				"gmail.com");
@@ -214,7 +212,7 @@ public class Bot implements PacketListener {
 
 		logger.debug("Посылаем в очередь" + message.getFrom() + " " + resp);
 		// sendMessage(message.getFrom(), resp);
-		queue2.add(new Info(InfoType.COMMON, message.getFrom(), resp));
+		queue.add(new Info(InfoType.COMMON, message.getFrom(), resp));
 
 	}
 
