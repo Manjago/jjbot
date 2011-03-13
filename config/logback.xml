@@ -8,7 +8,7 @@
   </appender>
   <appender name="logfile" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <!--See also http://logback.qos.ch/manual/appenders.html#RollingFileAppender-->
-    <File>logs/jjbot.log</File>
+    <File>/opt/jjbot/logs/jjbot.log</File>
     <encoder>
       <pattern>%d [%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
