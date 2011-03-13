@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ public class Application {
 
 	public static void main(String[] args) throws FileNotFoundException {
 
+		//XMPPConnection.DEBUG_ENABLED = true;
 		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
 		JoranConfigurator configurator = null;
 		try {
