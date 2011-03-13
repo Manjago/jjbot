@@ -19,6 +19,7 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.temnenkov.jjbot.bot.Info.InfoType;
 import com.temnenkov.jjbot.btcex.Pair;
 import com.temnenkov.jjbot.btcex.entity.InfoWithHint;
 import com.temnenkov.jjbot.btcex.web.OrderInformer;
@@ -30,6 +31,7 @@ public class Bot implements PacketListener {
 	private final String password;
 	private final String user;
 	private final LogManager logManager;
+	private int tCounter = 0;
 
 	public String getUser() {
 		return user;
@@ -45,8 +47,11 @@ public class Bot implements PacketListener {
 	private RoomPacketListener muc2Listen;
 
 	private static ConcurrentLinkedQueue<Info> queue;
+	private static ConcurrentLinkedQueue<Info> queue2;
 
-	private final Logger logger = LoggerFactory.getLogger(getClass());
+	private final static Logger logger = LoggerFactory.getLogger(Bot.class);
+
+	private Object syncObject = new Object();
 
 	public Bot(String username, String pwd, String listener, String operator,
 			final String room, String roomnick) throws XMPPException,
@@ -61,6 +66,7 @@ public class Bot implements PacketListener {
 		this.user2 = operator;
 
 		queue = new ConcurrentLinkedQueue<Info>();
+		queue2 = new ConcurrentLinkedQueue<Info>();
 
 		connConfig = new ConnectionConfiguration("talk.google.com", 5222,
 				"gmail.com");
@@ -91,7 +97,8 @@ public class Bot implements PacketListener {
 			MultiUserChat muc = new MultiUserChat(connection, roomName);
 
 			RoomPacketListener lstnr = new RoomPacketListener(logManager,
-					roomNick, i == 0, i == 0 ? queue : null);
+					roomNick, i == 0, i == 0 ? queue : null, i == 0 ? user
+							: null);
 			muc.addMessageListener(lstnr);
 
 			DiscussionHistory history = new DiscussionHistory();
@@ -114,8 +121,8 @@ public class Bot implements PacketListener {
 
 		msg.setBody(message);
 
+		logger.debug("send pkt " + Helper.toString(msg));
 		connection.sendPacket(msg);
-
 	}
 
 	public void disconnect() {
@@ -135,28 +142,56 @@ public class Bot implements PacketListener {
 
 		// messageSender.disconnect();
 		while (true) {
-			Thread.sleep(1000);
+			Thread.sleep(200);
+
 			Info i = queue.poll();
 			if (i != null) {
-				String body = i.getFrom() + ":" + i.getData();
-				messageSender.sendMessage(messageSender.getUser(), body);
+
+				switch (i.getType()) {
+				case USER:
+					String body = i.getFrom() + ":" + i.getData();
+					messageSender.sendMessage(messageSender.getUser(), body);
+					break;
+				case COMMON:
+					try {
+						messageSender.sendMessage(i.getTargetAddr(), i
+								.getData());
+					} catch (Exception e) {
+						logger.error("fail", e);
+					}
+					break;
+				}
 			}
+
 		}
 	}
 
 	public void processPacket(Packet packet) {
+		String name = "bot " + ++tCounter;
+		ThreadProcessPkt t = new ThreadProcessPkt(name, packet, this);
+		t.start();
+	}
+
+	public void safeProcessPacket(Packet packet) {
+		synchronized (syncObject) {
+			doPacket(packet);
+		}
+	}
+
+	private void doPacket(Packet packet) {
 		Message message = (Message) packet;
 
-		System.out.println("process message  (from: " + message.getFrom() + "): "
-				+ message.getBody());
+		System.out.println("process message  (from: " + message.getFrom()
+				+ "): " + message.getBody() + ":" + packet.toXML());
 
-		// если боди - нулл, то ничего не делаем (такое бывает с этой библилотекой)
-		if (message.getBody() == null){
-			logger.debug("у мессаджа нулл, а пакет у нас " + packet != null ? packet.toString() : "null");
+		// если боди - нулл, то ничего не делаем (такое бывает с этой
+		// библилотекой)
+		if (message.getBody() == null) {
+			logger.debug("у мессаджа нулл, а пакет у нас "
+					+ (packet != null ? packet.toXML() : "null"));
 			return;
 		}
-		
-		
+
 		// принимаем только от оператора
 		if (message.getFrom() == null)
 			return;
@@ -165,12 +200,26 @@ public class Bot implements PacketListener {
 			processGuest(message);
 		else
 			prosessOpers(message);
-
 	}
 
 	private void processGuest(Message message) {
-		logger.info("get msg from guest " + Helper.toString(message));
+		logger.info("get cmd from guest " + Helper.toString(message));
 		String resp;
+		try {
+			resp = processCmd(message);
+		} catch (Exception e) {
+			logger.error("fail process cmd", e);
+			return;
+		}
+
+		logger.debug("Посылаем в очередь" + message.getFrom() + " " + resp);
+		// sendMessage(message.getFrom(), resp);
+		queue2.add(new Info(InfoType.COMMON, message.getFrom(), resp));
+
+	}
+
+	private String processCmd(Message message) {
+		String resp = "Ошибка - сообщите разработчЕГУ";
 		if (message.getBody() == null) {
 
 			resp = "Извините, я - глупый бот. Введите команду HELP, пожалуйста.";
@@ -204,11 +253,10 @@ public class Bot implements PacketListener {
 				} else {
 
 					// ну может помощь?
-					if ("HELP".equals(msg)){
+					if ("HELP".equals(msg)) {
 						logger.debug("это запрос помощи");
 						resp = getHelp(null);
-					}
-					else{
+					} else {
 						logger.debug("это неизвестная команда");
 						resp = getHelp(msg);
 					}
@@ -217,10 +265,7 @@ public class Bot implements PacketListener {
 			}
 
 		}
-
-		logger.debug("Посылаем " + message.getFrom() + " " + resp);
-		sendMessage(message.getFrom(), resp);
-
+		return resp;
 	}
 
 	private String getHelp(String badCmd) {
@@ -245,7 +290,8 @@ public class Bot implements PacketListener {
 		sb.append("!YAD список ордеров на покупку-продажу Яндекс.Денег\r\n");
 		sb.append("!WMZ список ордеров на покупку-продажу WebMoney USD\r\n");
 		sb.append("!WMR список ордеров на покупку-продажу WebMoney рублей\r\n");
-		sb.append("Если вам этого мало - пишите на https://www.bitcoin.org/smf/index.php?topic=4256.0");
+		sb
+				.append("Если вам этого мало - пишите на https://www.bitcoin.org/smf/index.php?topic=4256.0");
 		return sb.toString();
 	}
 
