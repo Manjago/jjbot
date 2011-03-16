@@ -24,6 +24,7 @@ import com.temnenkov.jjbot.btcex.Pair;
 import com.temnenkov.jjbot.btcex.entity.InfoWithHint;
 import com.temnenkov.jjbot.btcex.web.OrderInformer;
 import com.temnenkov.jjbot.btcex.web.TickerInformer;
+import com.temnenkov.jjbot.mtgox.MtgoxTickerInformer;
 import com.temnenkov.jjbot.util.Helper;
 
 public class Bot implements PacketListener {
@@ -257,8 +258,21 @@ public class Bot implements PacketListener {
 						logger.debug("это запрос помощи");
 						resp = getHelp(null);
 					} else {
-						logger.debug("это неизвестная команда");
-						resp = getHelp(msg);
+
+						// мтгокс?
+						if ("MTGOX".equals(msg)) {
+							logger.debug("это mtgox");
+							InfoWithHint res = MtgoxTickerInformer.info();
+							if (res.getInfo() == null)
+								resp = res.getHint();
+							else
+								resp = res.getInfo();
+
+						} else {
+							logger.debug("это неизвестная команда");
+							resp = getHelp(msg);
+						}
+
 					}
 				}
 
@@ -282,6 +296,7 @@ public class Bot implements PacketListener {
 		sb.append("WMZ курс WebMoney USD\r\n");
 		sb.append("WMR курс WebMoney рублей\r\n");
 		sb.append("ALL курс всех вышеперечисленных валют\r\n");
+		sb.append("MTGOX курс с mtgox.com\r\n");
 		sb.append("!USD список ордеров на покупку-продажу США\r\n");
 		sb
 				.append("!RUB список ордеров на покупку-продажу российских рублей\r\n");
