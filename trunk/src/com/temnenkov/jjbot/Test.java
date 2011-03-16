@@ -12,6 +12,8 @@ import net.sf.json.JSONObject;
 import com.temnenkov.jjbot.bot.LogManager;
 import com.temnenkov.jjbot.btcex.Pair;
 import com.temnenkov.jjbot.btcex.entity.TickerKeeper;
+import com.temnenkov.jjbot.mtgox.MtgoxTicker;
+import com.temnenkov.jjbot.mtgox.MtgoxTickerKeeper;
 import com.temnenkov.jjbot.util.HTTPRequestPoster;
 import com.temnenkov.jjbot.util.Helper;
 import java.sql.Connection;
@@ -30,15 +32,28 @@ public class Test {
 	 */
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		
-		System.out.println(Pair.valueOf("YAD").getCode());
-		try
-		{
-			System.out.println(Pair.valueOf("1"));			
-		}
-		catch(IllegalArgumentException e)
-		{
-			System.out.println("!");
-		}
+		String json = HTTPRequestPoster.sendGetRequest(
+				"http://mtgox.com/code/data/ticker.php", "");
+
+		JSONObject jsonObject = JSONObject.fromObject(json);
+		
+		MtgoxTickerKeeper infoBean = (MtgoxTickerKeeper)JSONObject.toBean(jsonObject,
+				MtgoxTickerKeeper.class);
+		
+		if (infoBean == null)
+			System.out.println("null");
+		else
+			System.out.println(infoBean);
+		
+//		System.out.println(Pair.valueOf("YAD").getCode());
+//		try
+//		{
+//			System.out.println(Pair.valueOf("1"));			
+//		}
+//		catch(IllegalArgumentException e)
+//		{
+//			System.out.println("!");
+//		}
 		
 //		LogManager lm = new LogManager();
 //		lm.init();

@@ -37,7 +37,7 @@ public class TickerInformer {
 
 		} else {
 			logger.debug("testBean null");
-			return null;
+			return new InfoWithHint(null, "Временные проблемы на btcex.com");
 		}
 
 		if ("ALL".equals(curr)){

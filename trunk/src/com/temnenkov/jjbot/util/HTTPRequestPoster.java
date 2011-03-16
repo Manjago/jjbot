@@ -29,7 +29,7 @@ public class HTTPRequestPoster {
 	public static String sendGetRequest(String endpoint,
 			String requestParameters) {
 		String result = null;
-		if (endpoint.startsWith("https://")) {
+		if ( endpoint.startsWith("https://") || endpoint.startsWith("http://")) {
 			// Send a GET request to the servlet
 			try {
 				// Construct data
