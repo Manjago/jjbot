@@ -47,7 +47,7 @@ public class RoomPacketListener implements PacketListener {
 
 		System.out.println(message.getFrom() + ":" + message.getBody());
 		try {
-			logManager.storeMsg(room, message.getFrom(), message.getBody(),
+			logManager.storeMsg(message.getFrom(), message.getBody(),
 					Helper.isDelayedMessage(message));
 
 			logger.debug("store msg " + Helper.toString(message));
