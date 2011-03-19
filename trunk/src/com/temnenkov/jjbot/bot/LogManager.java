@@ -1,7 +1,6 @@
 package com.temnenkov.jjbot.bot;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -25,7 +24,7 @@ public class LogManager {
 			throws SQLException {
 
 		storeMsg.setString(1, jid);
-		storeMsg.setString(2, Helper.extractRoomNick(from));
+		storeMsg.setString(2, Helper.extractUser(from));
 		storeMsg.setString(3, Helper.safeStr(payload));
 		storeMsg.setString(4, isDelayed ? "D" : "N");
 
