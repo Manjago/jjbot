@@ -10,6 +10,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+	<url>http://code.google.com/p/jjbot/</url>
 	<inceptionYear>2010</inceptionYear>
 	<developers>
 		<developer>

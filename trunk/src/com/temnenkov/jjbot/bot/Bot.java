@@ -7,15 +7,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.Roster;
-import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.MessageTypeFilter;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smackx.muc.DiscussionHistory;
-import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,14 +41,13 @@ public class Bot implements PacketListener {
 
 	XMPPConnection connection;
 
-	private MultiUserChat muc2;
-	private RoomPacketListener muc2Listen;
-
-	private static ConcurrentLinkedQueue<Info> queue;
+	private final ConcurrentLinkedQueue<Info> queue;
 
 	private final static Logger logger = LoggerFactory.getLogger(Bot.class);
 
 	private Object syncObject = new Object();
+
+	private final LameRoomManager roomManager;
 
 	public Bot(String username, String pwd, String listener, String operator,
 			final String room, String roomnick) throws XMPPException,
@@ -85,33 +81,20 @@ public class Bot implements PacketListener {
 		// PacketFilter filter2 = new MessageTypeFilter(Message.Type.groupchat);
 
 		connection.addPacketListener((PacketListener) this, filter);
+		// connection.addPacketListener(new PacketListener() {
+		//
+		// @Override
+		// public void processPacket(Packet packet) {
+		// if (packet instanceof Presence) {
+		// Presence p = (Presence) packet;
+		// logger.debug("PRESENCE " + p.getFrom() + " " + p.toXML());
+		// }
+		//
+		// }
+		// }, null);
 
-		String[] rooms = room.split(";");
-		String[] roomNicks = roomnick.split(";");
-		for (int i = 0; i < rooms.length; ++i) {
-
-			String roomName = rooms[i];
-			String roomNick = roomNicks[i];
-
-			MultiUserChat muc = new MultiUserChat(connection, roomName);
-
-			RoomPacketListener lstnr = new RoomPacketListener(logManager,
-					roomNick, i == 0, i == 0 ? queue : null, i == 0 ? user
-							: null);
-			muc.addMessageListener(lstnr);
-
-			DiscussionHistory history = new DiscussionHistory();
-			history.setMaxStanzas(5);
-			muc.join(roomNick, "", history, SmackConfiguration
-					.getPacketReplyTimeout());
-			logger.info("join room " + roomName + " as " + roomNick + " ok");
-
-			if (i == 0) {
-				muc2 = muc;
-				muc2Listen = lstnr;
-			}
-		}
-
+		roomManager = new LameRoomManager(connection, logManager, queue, user);
+		roomManager.init(room, roomnick);
 	}
 
 	public void sendMessage(String to, String message) {
@@ -134,28 +117,27 @@ public class Bot implements PacketListener {
 			String operator, String room, String roomnick)
 			throws XMPPException, InterruptedException, SQLException,
 			ClassNotFoundException {
-		Bot messageSender = new Bot(username, pwd, listener, operator, room,
-				roomnick);
+		Bot bot = new Bot(username, pwd, listener, operator, room, roomnick);
 
 		// messageSender.sendMessage(messageSender.getUser(),
 		// "type #on or #off");
-		queue.add(new Info(InfoType.USER, messageSender.getUser(),
-				"type #on or #off"));
+		bot.getQueue().add(
+				new Info(InfoType.USER, bot.getUser(), "type #on or #off"));
 
 		// messageSender.disconnect();
 		while (true) {
-			Info i = queue.poll();
+			bot.check();
+			Info i = bot.getQueue().poll();
 			if (i != null) {
 
 				switch (i.getType()) {
 				case USER:
 					String body = i.getFrom() + ":" + i.getData();
-					messageSender.sendMessage(messageSender.getUser(), body);
+					bot.sendMessage(bot.getUser(), body);
 					break;
 				case COMMON:
 					try {
-						messageSender.sendMessage(i.getTargetAddr(), i
-								.getData());
+						bot.sendMessage(i.getTargetAddr(), i.getData());
 					} catch (Exception e) {
 						logger.error("fail", e);
 					}
@@ -186,7 +168,7 @@ public class Bot implements PacketListener {
 				+ "): " + message.getBody() + ":" + packet.toXML());
 
 		// если боди - нулл, то ничего не делаем (такое бывает с этой
-		// библилотекой)
+		// библиотекой)
 		if (message.getBody() == null) {
 			logger.debug("у мессаджа нулл, а пакет у нас "
 					+ (packet != null ? packet.toXML() : "null"));
@@ -314,26 +296,42 @@ public class Bot implements PacketListener {
 		String body = message.getBody();
 		if (body.contains("#on")) {
 
-			if (muc2Listen != null)
-				muc2Listen.setActive(true);
+			if (roomManager.getUserMucListen() != null)
+				roomManager.getUserMucListen().setActive(true);
 			sendMessage(user, "listener on");
 			return;
 		}
 
 		if (body.contains("#off")) {
-			if (muc2Listen != null)
-				muc2Listen.setActive(false);
+			if (roomManager.getUserMucListen() != null)
+				roomManager.getUserMucListen().setActive(false);
 			sendMessage(user, "listener off");
 			return;
 		}
 
-		Message msg = muc2.createMessage();
-		msg.setBody(message.getBody());
+		if (roomManager.getUserMuc() != null) {
+			Message msg = roomManager.getUserMuc().createMessage();
+			msg.setBody(message.getBody());
+			try {
+				roomManager.getUserMuc().sendMessage(msg);
+			} catch (XMPPException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+
+	}
+
+	public ConcurrentLinkedQueue<Info> getQueue() {
+		return queue;
+	}
+
+	public void check() {
 		try {
-			muc2.sendMessage(msg);
+			roomManager.check();
 		} catch (XMPPException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("error during checking ", e);
 		}
 	}
 
