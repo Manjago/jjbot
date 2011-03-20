@@ -50,7 +50,7 @@ public class LameRoomManager {
 	private void createListener(boolean special, String roomName,
 			String roomNick) throws XMPPException {
 		MultiUserChat muc = new MultiUserChat(connection, roomName);
-		RoomInfo chat = new RoomInfo(muc, roomNick); 
+		RoomInfo chat = new RoomInfo(muc, roomNick);
 		chats.add(chat);
 
 		RoomPacketListener lstnr = new RoomPacketListener(logManager, roomNick,
@@ -75,12 +75,10 @@ public class LameRoomManager {
 
 	public void check() throws XMPPException {
 		for (RoomInfo chat : chats) {
-			if (chat.getMuc().isJoined())
-				logger.debug("joined");
-			else {
+			if (!chat.getMuc().isJoined()) {
 				logger.debug("NOT JOINED");
-				chat.getMuc().join(chat.getNickname(), "", null, SmackConfiguration
-						.getPacketReplyTimeout());
+				chat.getMuc().join(chat.getNickname(), "", null,
+						SmackConfiguration.getPacketReplyTimeout());
 			}
 		}
 	}
