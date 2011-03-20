@@ -5,6 +5,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.sqlite.SQLiteJDBCLoader;
 
 import net.sf.json.JSONObject;
@@ -16,6 +17,10 @@ import com.temnenkov.jjbot.mtgox.MtgoxTicker;
 import com.temnenkov.jjbot.mtgox.MtgoxTickerKeeper;
 import com.temnenkov.jjbot.util.HTTPRequestPoster;
 import com.temnenkov.jjbot.util.Helper;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -29,21 +34,27 @@ public class Test {
 	 * @param args
 	 * @throws ClassNotFoundException 
 	 * @throws SQLException 
+	 * @throws IOException 
 	 */
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
 		
-		String json = HTTPRequestPoster.sendGetRequest(
-				"http://mtgox.com/code/data/ticker.php", "");
-
-		JSONObject jsonObject = JSONObject.fromObject(json);
+		File file = new File("/opt/jjbot/test.txt");
+		FileWriterWithEncoding fw = new FileWriterWithEncoding(file, Charset.forName("866"));
+		fw.write("gertóðà");
+		fw.close();
 		
-		MtgoxTickerKeeper infoBean = (MtgoxTickerKeeper)JSONObject.toBean(jsonObject,
-				MtgoxTickerKeeper.class);
-		
-		if (infoBean == null)
-			System.out.println("null");
-		else
-			System.out.println(infoBean);
+//		String json = HTTPRequestPoster.sendGetRequest(
+//				"http://mtgox.com/code/data/ticker.php", "");
+//
+//		JSONObject jsonObject = JSONObject.fromObject(json);
+//		
+//		MtgoxTickerKeeper infoBean = (MtgoxTickerKeeper)JSONObject.toBean(jsonObject,
+//				MtgoxTickerKeeper.class);
+//		
+//		if (infoBean == null)
+//			System.out.println("null");
+//		else
+//			System.out.println(infoBean);
 		
 //		System.out.println(Pair.valueOf("YAD").getCode());
 //		try
