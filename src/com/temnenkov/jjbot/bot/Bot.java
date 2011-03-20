@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.PacketListener;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.temnenkov.jjbot.bot.Info.InfoType;
+import com.temnenkov.jjbot.bot.Task.TaskType;
 import com.temnenkov.jjbot.util.Helper;
 
 public class Bot implements PacketListener {
@@ -40,7 +42,7 @@ public class Bot implements PacketListener {
 
 	private final static Logger logger = LoggerFactory.getLogger(Bot.class);
 
-	private Object syncObject = new Object();
+	private final PriorityBlockingQueue<Task> taskQueue;
 
 	private final LameRoomManager roomManager;
 	private final Executor executor;
@@ -50,7 +52,8 @@ public class Bot implements PacketListener {
 			SQLException, ClassNotFoundException {
 
 		executor = Executors.newSingleThreadExecutor();
-		
+		taskQueue = new PriorityBlockingQueue<Task>();
+
 		logManager = new LogManager();
 		logManager.init();
 		logger.info("database ok");
@@ -122,29 +125,75 @@ public class Bot implements PacketListener {
 		bot.getQueue().add(
 				new Info(InfoType.USER, bot.getUser(), "type #on or #off"));
 
-		// messageSender.disconnect();
-		while (true) {
-			bot.check();
-			Info i = bot.getQueue().poll();
-			if (i != null) {
+		bot.getTaskQueue().add(new Task(TaskType.SENDMSG, 0));
+		bot.getTaskQueue().add(new Task(TaskType.CHECKALIVE, 1000 * 60));
 
-				switch (i.getType()) {
-				case USER:
-					String body = i.getFrom() + ":" + i.getData();
-					bot.sendMessage(bot.getUser(), body);
-					break;
-				case COMMON:
-					try {
-						bot.sendMessage(i.getTargetAddr(), i.getData());
-					} catch (Exception e) {
-						logger.error("fail", e);
+		while (true) {
+			Task task = bot.getTaskQueue().peek();
+			if (task == null || task.getExecDate().isAfterNow()) {
+				Thread.sleep(200);
+			} else {
+				// если мы здесь - то можно и получить task
+				task = bot.getTaskQueue().poll();
+
+				switch (task.getTaskType()) {
+				case SENDMSG:
+					Info i = bot.getQueue().poll();
+					if (i != null) {
+
+						switch (i.getType()) {
+						case USER:
+							String body = i.getFrom() + ":" + i.getData();
+							bot.sendMessage(bot.getUser(), body);
+							break;
+						case COMMON:
+							try {
+								bot.sendMessage(i.getTargetAddr(), i.getData());
+							} catch (Exception e) {
+								logger.error("fail", e);
+							}
+							break;
+						}
+						bot.getTaskQueue().add(
+								new Task(TaskType.SENDMSG, 15000));
+					} else {
+						bot.getTaskQueue().add(new Task(TaskType.SENDMSG, 200));
 					}
 					break;
+				case CHECKALIVE:
+					bot.check();
+					bot.getTaskQueue().add(
+							new Task(TaskType.CHECKALIVE, 60 * 1000));
+					break;
+				default:
+					logger.error("Unknown task " + task);
 				}
-				Thread.sleep(15000);
-			} else
-				Thread.sleep(200);
+
+			}
 		}
+
+		// while (true) {
+		// bot.check();
+		// Info i = bot.getQueue().poll();
+		// if (i != null) {
+		//
+		// switch (i.getType()) {
+		// case USER:
+		// String body = i.getFrom() + ":" + i.getData();
+		// bot.sendMessage(bot.getUser(), body);
+		// break;
+		// case COMMON:
+		// try {
+		// bot.sendMessage(i.getTargetAddr(), i.getData());
+		// } catch (Exception e) {
+		// logger.error("fail", e);
+		// }
+		// break;
+		// }
+		// Thread.sleep(15000);
+		// } else
+		// Thread.sleep(200);
+		// }
 	}
 
 	public void processPacket(Packet packet) {
@@ -170,6 +219,10 @@ public class Bot implements PacketListener {
 
 	public LameRoomManager getRoomManager() {
 		return roomManager;
+	}
+
+	public PriorityBlockingQueue<Task> getTaskQueue() {
+		return taskQueue;
 	}
 
 }
