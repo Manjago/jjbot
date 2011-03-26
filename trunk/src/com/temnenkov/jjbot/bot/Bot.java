@@ -1,6 +1,8 @@
 package com.temnenkov.jjbot.bot;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -20,6 +22,12 @@ import org.slf4j.LoggerFactory;
 
 import com.temnenkov.jjbot.bot.Info.InfoType;
 import com.temnenkov.jjbot.bot.Task.TaskType;
+import com.temnenkov.jjbot.bot.command.Command;
+import com.temnenkov.jjbot.bot.command.CourseCommand;
+import com.temnenkov.jjbot.bot.command.HelpCommand;
+import com.temnenkov.jjbot.bot.command.MtGoxCommand;
+import com.temnenkov.jjbot.bot.command.OrderCommand;
+import com.temnenkov.jjbot.bot.command.UnknownCommand;
 import com.temnenkov.jjbot.util.Helper;
 
 public class Bot implements PacketListener {
@@ -47,9 +55,35 @@ public class Bot implements PacketListener {
 	private final LameRoomManager roomManager;
 	private final Executor executor;
 
+	private final List<Command> commands;
+	private final String helpText;
+
 	public Bot(String username, String pwd, String listener, String operator,
 			final String room, String roomnick) throws XMPPException,
 			SQLException, ClassNotFoundException {
+
+		commands = new ArrayList<Command>();
+
+		HelpCommand helpCommand = new HelpCommand();
+		UnknownCommand unknownCommand = new UnknownCommand();
+		commands.add(helpCommand);
+		commands.add(new CourseCommand());
+		commands.add(new MtGoxCommand());
+		commands.add(new OrderCommand());
+		commands.add(unknownCommand);
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("Список доступных команд:\r\n");
+		for (Command cmd : commands) {
+			cmd.getHelp(sb);
+		}
+		sb
+				.append("Если вам этого мало - пишите на https://www.bitcoin.org/smf/index.php?topic=4256.0");
+		helpText = sb.toString();
+		helpCommand.setHelpString(helpText);
+		unknownCommand.setHelpString(helpText);
+		
+		logger.info("commands ok");
 
 		executor = Executors.newSingleThreadExecutor();
 		taskQueue = new PriorityBlockingQueue<Task>();
@@ -223,6 +257,14 @@ public class Bot implements PacketListener {
 
 	public PriorityBlockingQueue<Task> getTaskQueue() {
 		return taskQueue;
+	}
+
+	public List<Command> getCommands() {
+		return commands;
+	}
+
+	public String getHelpText() {
+		return helpText;
 	}
 
 }
