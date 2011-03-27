@@ -6,8 +6,25 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.jivesoftware.smack.packet.Message;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 public class Helper {
+
+	public static DateTimeFormatter sqliteDateFormat = DateTimeFormat
+			.forPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS");
+
+	public static String toSqliteDate(DateTime date) {
+		return sqliteDateFormat.print(date);
+	}
+
+	public static DateTime fromSqliteDate(String date) {
+		if ((date != null) && (date.length() == 19))
+			date += ".000";
+		return sqliteDateFormat.parseDateTime(date);
+	}
+
 	public static String toString(Message msg) {
 		if (msg == null)
 			return "null";
@@ -87,5 +104,10 @@ public class Helper {
 
 	public static boolean isDelayedMessage(Message msg) {
 		return msg.getExtension("delay", "urn:xmpp:delay") != null;
+	}
+
+	public static DateTime tomorrow() {
+		return new DateTime().plusDays(1).withHourOfDay(0).withMinuteOfHour(0)
+				.withSecondOfMinute(0).withMillisOfSecond(0);
 	}
 }

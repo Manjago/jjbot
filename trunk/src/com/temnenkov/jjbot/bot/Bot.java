@@ -1,5 +1,6 @@
 package com.temnenkov.jjbot.bot;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +83,7 @@ public class Bot implements PacketListener {
 		helpText = sb.toString();
 		helpCommand.setHelpString(helpText);
 		unknownCommand.setHelpString(helpText);
-		
+
 		logger.info("commands ok");
 
 		executor = Executors.newSingleThreadExecutor();
@@ -161,6 +162,7 @@ public class Bot implements PacketListener {
 
 		bot.getTaskQueue().add(new Task(TaskType.SENDMSG, 0));
 		bot.getTaskQueue().add(new Task(TaskType.CHECKALIVE, 1000 * 60));
+		bot.getTaskQueue().add(new Task(TaskType.EXPORTLOG, 20 * 1000));
 
 		while (true) {
 			Task task = bot.getTaskQueue().peek();
@@ -199,6 +201,19 @@ public class Bot implements PacketListener {
 					bot.getTaskQueue().add(
 							new Task(TaskType.CHECKALIVE, 60 * 1000));
 					break;
+				case EXPORTLOG:
+					try {
+						bot.getRoomManager().exportYesterdayLog(
+								bot.getLogManager());
+					} catch (IOException e) {
+						logger.error("fail export log", e);
+					} catch (SQLException e) {
+						logger.error("fail export log", e);
+					}
+					bot.getTaskQueue().add(
+							new Task(TaskType.EXPORTLOG, Helper.tomorrow()
+									.plusMinutes(1)));
+					break;
 				default:
 					logger.error("Unknown task " + task);
 				}
@@ -206,28 +221,6 @@ public class Bot implements PacketListener {
 			}
 		}
 
-		// while (true) {
-		// bot.check();
-		// Info i = bot.getQueue().poll();
-		// if (i != null) {
-		//
-		// switch (i.getType()) {
-		// case USER:
-		// String body = i.getFrom() + ":" + i.getData();
-		// bot.sendMessage(bot.getUser(), body);
-		// break;
-		// case COMMON:
-		// try {
-		// bot.sendMessage(i.getTargetAddr(), i.getData());
-		// } catch (Exception e) {
-		// logger.error("fail", e);
-		// }
-		// break;
-		// }
-		// Thread.sleep(15000);
-		// } else
-		// Thread.sleep(200);
-		// }
 	}
 
 	public void processPacket(Packet packet) {
@@ -265,6 +258,10 @@ public class Bot implements PacketListener {
 
 	public String getHelpText() {
 		return helpText;
+	}
+
+	public LogManager getLogManager() {
+		return logManager;
 	}
 
 }

@@ -5,7 +5,7 @@ import org.joda.time.DateTime;
 public class Task implements Comparable<Task> {
 
 	public enum TaskType {
-		SENDMSG, CHECKALIVE
+		SENDMSG, CHECKALIVE, EXPORTLOG
 	}
 
 	private final DateTime execDate;

@@ -1,13 +1,19 @@
 package com.temnenkov.jjbot.bot;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +86,31 @@ public class LameRoomManager {
 				chat.getMuc().join(chat.getNickname(), "", null,
 						SmackConfiguration.getPacketReplyTimeout());
 			}
+		}
+	}
+
+	public void exportYesterdayLog(LogManager lm) throws IOException,
+			SQLException {
+		DateTime now = new DateTime();
+		DateTime yesterday = now.minusDays(1);
+		DateTime fromDate = yesterday.withHourOfDay(0).withMinuteOfHour(0)
+				.withSecondOfMinute(0).withMillisOfSecond(0);
+		DateTime tillDate = yesterday.withHourOfDay(23).withMinuteOfHour(59)
+				.withSecondOfMinute(59).withMillisOfSecond(999);
+
+		for (RoomInfo info : chats) {
+			String roomName = info.getMuc().getRoom();
+			logger.debug("export log for " + roomName);
+
+			File file = new File("/home/jjbot/" + roomName + ".log");
+			FileWriterWithEncoding fw = new FileWriterWithEncoding(file,
+					Charset.forName("866"));
+			try {
+				lm.getLog(fw, roomName, fromDate, tillDate);
+			} finally {
+				fw.close();
+			}
+
 		}
 	}
 
