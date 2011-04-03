@@ -32,7 +32,7 @@ public class LogManager {
 		connection = DriverManager
 				.getConnection("jdbc:sqlite:/opt/jjbot/ConfLog.sqlite");
 		storeMsg = connection
-				.prepareStatement("insert into Log ([Jid], [From], [Message], [Type]) values (?,?,?,?);");
+				.prepareStatement("insert into Log ([Jid], [From], [Message], [Type], [Date]) values (?,?,?,?,?);");
 		getLog = connection
 				.prepareStatement("select [From], Date, Message from Log where [Jid] = ? and date between ? and ? and [Type] = ? order by id asc;");
 	}
@@ -44,6 +44,7 @@ public class LogManager {
 		storeMsg.setString(2, Helper.extractRoomNick(from));
 		storeMsg.setString(3, Helper.safeStr(payload));
 		storeMsg.setString(4, isDelayed ? "D" : "N");
+		storeMsg.setString(5, Helper.toSqliteDate(new DateTime()));
 
 		storeMsg.executeUpdate();
 	}
