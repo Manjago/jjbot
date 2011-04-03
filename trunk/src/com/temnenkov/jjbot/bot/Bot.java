@@ -19,6 +19,7 @@ import org.jivesoftware.smack.filter.MessageTypeFilter;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Presence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,7 +87,7 @@ public class Bot implements PacketListener {
 				.append("Если вам этого мало - пишите на https://www.bitcoin.org/smf/index.php?topic=4256.0");
 		helpTexts = new HashMap<RequestSource, String>();
 		hb.toString(helpTexts);
-		
+
 		hb.toString(helpCommand.getHelpStrings());
 		hb.toString(unknownCommand.getHelpStrings());
 
@@ -123,17 +124,24 @@ public class Bot implements PacketListener {
 		// PacketFilter filter2 = new MessageTypeFilter(Message.Type.groupchat);
 
 		connection.addPacketListener((PacketListener) this, filter);
-		// connection.addPacketListener(new PacketListener() {
-		//
-		// @Override
-		// public void processPacket(Packet packet) {
-		// if (packet instanceof Presence) {
-		// Presence p = (Presence) packet;
-		// logger.debug("PRESENCE " + p.getFrom() + " " + p.toXML());
-		// }
-		//
-		// }
-		// }, null);
+		connection.addPacketListener(new PacketListener() {
+
+			@Override
+			public void processPacket(Packet packet) {
+				if (packet instanceof Presence) {
+					Presence p = (Presence) packet;
+					// logger.debug("PRESENCE " + p.getFrom() + " " +
+					// p.toXML());
+					try {
+						Helper.writeToFile(Helper.extractUser(p.getFrom())+".flg", p.toXML());
+					} catch (IOException e) {
+						logger.error("fail write PRESENCE " + p.getFrom() + " "
+								+ p.toXML(), e);
+					}
+				}
+
+			}
+		}, null);
 
 		roomManager = new LameRoomManager(connection, logManager, queue, user);
 		roomManager.init(room, roomnick);

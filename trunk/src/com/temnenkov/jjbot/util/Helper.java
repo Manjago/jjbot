@@ -1,10 +1,16 @@
 package com.temnenkov.jjbot.util;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.Charset;
+
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.jivesoftware.smack.packet.Message;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -113,5 +119,15 @@ public class Helper {
 	public static DateTime tomorrow() {
 		return new DateTime().plusDays(1).withHourOfDay(0).withMinuteOfHour(0)
 				.withSecondOfMinute(0).withMillisOfSecond(0);
+	}
+	
+	public static void writeToFile(String fileName, String content) throws IOException{
+		File file = new File("/home/jjbot/" + fileName);
+		FileWriter fw = new FileWriter(file);
+		try {
+			fw.write(content);
+		} finally {
+			fw.close();
+		}		
 	}
 }
