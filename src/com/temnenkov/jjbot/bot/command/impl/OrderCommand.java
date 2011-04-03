@@ -1,18 +1,22 @@
-package com.temnenkov.jjbot.bot.command;
+package com.temnenkov.jjbot.bot.command.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.temnenkov.jjbot.bot.command.CommonCommand;
+import com.temnenkov.jjbot.bot.command.Request;
+import com.temnenkov.jjbot.bot.command.RequestSource;
+import com.temnenkov.jjbot.bot.command.Responce;
 import com.temnenkov.jjbot.btcex.Pair;
 import com.temnenkov.jjbot.btcex.entity.InfoWithHint;
 import com.temnenkov.jjbot.btcex.web.OrderInformer;
 
-public class OrderCommand implements Command {
+public class OrderCommand extends CommonCommand {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	@Override
-	public void getHelp(StringBuilder sb) {
+	public void getHelp(RequestSource source, StringBuilder sb) {
 		sb.append("!USD список ордеров на покупку-продажу США\r\n");
 		sb
 				.append("!RUB список ордеров на покупку-продажу российских рублей\r\n");
@@ -24,16 +28,16 @@ public class OrderCommand implements Command {
 	}
 
 	@Override
-	public void process(String msg, CommandStatus commandStatus) {
-		if (msg.startsWith("!") && (msg.length() > 1)
-				&& Pair.isPair(msg.substring(1))) {
+	public void process(Request req, Responce resp) {
+		if (req.getBody().startsWith("!") && (req.getBody().length() > 1)
+				&& Pair.isPair(req.getBody().substring(1))) {
 			logger.debug("это список ордеров");
-			InfoWithHint res = OrderInformer.info(msg.substring(1));
+			InfoWithHint res = OrderInformer.info(req.getBody().substring(1));
 			if (res.getInfo() == null) {
-				commandStatus.print(res.getHint());
+				resp.print(res.getHint());
 			} else
-				commandStatus.print(res.getInfo());
-			commandStatus.setStopped(true);
+				resp.print(res.getInfo());
+			resp.setStopped(true);
 		}
 	}
 

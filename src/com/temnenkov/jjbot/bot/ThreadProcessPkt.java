@@ -10,7 +10,9 @@ import org.slf4j.LoggerFactory;
 
 import com.temnenkov.jjbot.bot.Info.InfoType;
 import com.temnenkov.jjbot.bot.command.Command;
-import com.temnenkov.jjbot.bot.command.CommandStatus;
+import com.temnenkov.jjbot.bot.command.Request;
+import com.temnenkov.jjbot.bot.command.RequestSource;
+import com.temnenkov.jjbot.bot.command.Responce;
 import com.temnenkov.jjbot.util.Helper;
 
 public class ThreadProcessPkt implements Runnable {
@@ -39,12 +41,16 @@ public class ThreadProcessPkt implements Runnable {
 
 		} else {
 
-			String msg = message.getBody().toUpperCase(new Locale("ru", "RU"));
-			CommandStatus commandStatus = new CommandStatus();
+			boolean fromMultiChat = bot.getRoomManager().isFromUs(message);
+			Request request = new Request(message.getFrom(), message.getBody()
+					.toUpperCase(new Locale("ru", "RU")),
+					fromMultiChat ? RequestSource.MULTICHATPRIVATE
+							: RequestSource.PRIVATE);
+			Responce responce = new Responce();
 			try {
 				for (Command cmd : bot.getCommands()) {
-					cmd.process(msg, commandStatus);
-					if (commandStatus.isStopped())
+					cmd.process(request, responce);
+					if (responce.isStopped())
 						break;
 				}
 
@@ -52,7 +58,7 @@ public class ThreadProcessPkt implements Runnable {
 				logger.error("fail process cmd", e);
 				return;
 			}
-			resp = commandStatus.getResponce();
+			resp = responce.getText();
 		}
 
 		logger.debug("Посылаем в очередь " + message.getFrom() + " " + resp);
@@ -82,7 +88,7 @@ public class ThreadProcessPkt implements Runnable {
 		else
 			prosessOpers(message);
 	}
-	
+
 	private void prosessOpers(Message message) {
 		String body = message.getBody();
 		if (body.contains("#on")) {

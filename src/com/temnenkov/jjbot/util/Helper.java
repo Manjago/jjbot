@@ -19,6 +19,10 @@ public class Helper {
 		return sqliteDateFormat.print(date);
 	}
 
+	public static String sqliteNow() {
+		return sqliteDateFormat.print(new DateTime());
+	}
+	
 	public static DateTime fromSqliteDate(String date) {
 		if ((date != null) && (date.length() == 19))
 			date += ".000";
