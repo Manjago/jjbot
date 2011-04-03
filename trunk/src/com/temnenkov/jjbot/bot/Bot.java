@@ -2,8 +2,9 @@ package com.temnenkov.jjbot.bot;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -24,11 +25,13 @@ import org.slf4j.LoggerFactory;
 import com.temnenkov.jjbot.bot.Info.InfoType;
 import com.temnenkov.jjbot.bot.Task.TaskType;
 import com.temnenkov.jjbot.bot.command.Command;
-import com.temnenkov.jjbot.bot.command.CourseCommand;
-import com.temnenkov.jjbot.bot.command.HelpCommand;
-import com.temnenkov.jjbot.bot.command.MtGoxCommand;
-import com.temnenkov.jjbot.bot.command.OrderCommand;
-import com.temnenkov.jjbot.bot.command.UnknownCommand;
+import com.temnenkov.jjbot.bot.command.RequestSource;
+import com.temnenkov.jjbot.bot.command.impl.CourseCommand;
+import com.temnenkov.jjbot.bot.command.impl.ExpectCommand;
+import com.temnenkov.jjbot.bot.command.impl.HelpCommand;
+import com.temnenkov.jjbot.bot.command.impl.MtGoxCommand;
+import com.temnenkov.jjbot.bot.command.impl.OrderCommand;
+import com.temnenkov.jjbot.bot.command.impl.UnknownCommand;
 import com.temnenkov.jjbot.util.Helper;
 
 public class Bot implements PacketListener {
@@ -56,14 +59,14 @@ public class Bot implements PacketListener {
 	private final LameRoomManager roomManager;
 	private final Executor executor;
 
-	private final List<Command> commands;
-	private final String helpText;
+	private final CommandManager commands;
+	private final Map<RequestSource, String> helpTexts;
 
 	public Bot(String username, String pwd, String listener, String operator,
 			final String room, String roomnick) throws XMPPException,
 			SQLException, ClassNotFoundException {
 
-		commands = new ArrayList<Command>();
+		commands = new CommandManager();
 
 		HelpCommand helpCommand = new HelpCommand();
 		UnknownCommand unknownCommand = new UnknownCommand();
@@ -71,18 +74,21 @@ public class Bot implements PacketListener {
 		commands.add(new CourseCommand());
 		commands.add(new MtGoxCommand());
 		commands.add(new OrderCommand());
+		commands.add(new ExpectCommand());
 		commands.add(unknownCommand);
 
-		StringBuilder sb = new StringBuilder();
-		sb.append("Список доступных команд:\r\n");
-		for (Command cmd : commands) {
-			cmd.getHelp(sb);
+		HelpBuilder hb = new HelpBuilder();
+		hb.append("Список доступных команд:\r\n");
+		for (Command cmd : commands.getCommands()) {
+			hb.addHelp(cmd);
 		}
-		sb
+		hb
 				.append("Если вам этого мало - пишите на https://www.bitcoin.org/smf/index.php?topic=4256.0");
-		helpText = sb.toString();
-		helpCommand.setHelpString(helpText);
-		unknownCommand.setHelpString(helpText);
+		helpTexts = new HashMap<RequestSource, String>();
+		hb.toString(helpTexts);
+		
+		hb.toString(helpCommand.getHelpStrings());
+		hb.toString(unknownCommand.getHelpStrings());
 
 		logger.info("commands ok");
 
@@ -253,11 +259,7 @@ public class Bot implements PacketListener {
 	}
 
 	public List<Command> getCommands() {
-		return commands;
-	}
-
-	public String getHelpText() {
-		return helpText;
+		return commands.getCommands();
 	}
 
 	public LogManager getLogManager() {

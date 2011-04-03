@@ -12,10 +12,13 @@ import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.temnenkov.jjbot.util.Helper;
 
 public class LameRoomManager {
 
@@ -114,6 +117,17 @@ public class LameRoomManager {
 		}
 	}
 
+	public boolean isFromUs(Message msg){
+		if (msg == null || msg.getFrom() == null) return false;
+		
+		String from = Helper.extractUser(msg.getFrom());
+		for(RoomInfo i: chats){
+			if (i.getMuc().getRoom().equals(from))
+				return true;
+		}
+		return false;
+	}
+	
 	@Override
 	public String toString() {
 		return "LameRoomManager [chats=" + chats + ", connection=" + connection

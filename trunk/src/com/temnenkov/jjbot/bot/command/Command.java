@@ -1,8 +1,14 @@
 package com.temnenkov.jjbot.bot.command;
 
+import java.util.Set;
+
 public interface Command {
 
-	void process(String msg, CommandStatus commandStatus);
+	void process(Request req, Responce resp);
 
-	void getHelp(StringBuilder sb);
+	void getHelp(RequestSource source, StringBuilder sb);
+	
+	Set<RequestSource> getSupportedTypes();
+	
+	boolean init();
 }
