@@ -1,13 +1,19 @@
 package com.temnenkov.jjbot.bot.command;
 
+import java.util.Locale;
+
+import com.temnenkov.jjbot.util.Helper;
+
 public class Request {
 	private final String from;
 	private final String body;
+	private final String originalBody;
 	private final RequestSource source;
 
 	public Request(String from, String body, RequestSource source) {
 		this.from = from;
-		this.body = body;
+		this.originalBody = body;
+		this.body = Helper.upper(originalBody);
 		this.source = source;
 	}
 
@@ -25,8 +31,12 @@ public class Request {
 
 	@Override
 	public String toString() {
-		return "Request [body=" + body + ", from=" + from + ", source="
-				+ source + "]";
+		return "Request [body=" + body + ", from=" + from + ", originalBody="
+				+ originalBody + ", source=" + source + "]";
 	}
 
+	public String getOriginalBody() {
+		return originalBody;
+	}
+	
 }

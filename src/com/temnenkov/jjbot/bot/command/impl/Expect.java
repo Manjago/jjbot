@@ -5,7 +5,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 public class Expect {
-	
+
 	private String author;
 	private DateTime deadTime;
 	private String content;
@@ -30,6 +30,13 @@ public class Expect {
 		return content;
 	}
 
+	public String getSafeContent() {
+		if (content == null)
+			return "";
+		else
+			return content.length() > 300 ? content.substring(0, 300) : content;
+	}
+
 	public void setContent(String content) {
 		this.content = content;
 	}
@@ -41,17 +48,17 @@ public class Expect {
 	}
 
 	public String toInfoString() {
-		
+
 		final DateTimeFormatter dateFormat = DateTimeFormat
-		.forPattern("yyyy-MM-dd HH:mm:ss");
-		
+				.forPattern("yyyy-MM-dd HH:mm:ss");
+
 		StringBuilder sb = new StringBuilder();
 		sb.append(getAuthor());
 		sb.append(" ");
 		sb.append(dateFormat.print(getDeadTime()));
 		sb.append(" ");
 		sb.append(getContent());
-		
+
 		return sb.toString();
 	}
 

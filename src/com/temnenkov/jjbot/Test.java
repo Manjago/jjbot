@@ -26,7 +26,7 @@ public class Test {
 		
 
 		DateTime now = new DateTime();
-		DateTime yesterday = now.minusDays(1).minusYears(1);
+		DateTime yesterday = new DateTime(2011,3,23,0,0,0,0);  //now.minusDays(1).minusYears(1);
 		DateTime fromDate = yesterday.withHourOfDay(0).withMinuteOfHour(0)
 				.withSecondOfMinute(0).withMillisOfSecond(0);
 		DateTime tillDate = yesterday.withHourOfDay(23).withMinuteOfHour(59)
@@ -36,7 +36,7 @@ public class Test {
 		FileWriterWithEncoding fw = new FileWriterWithEncoding(file, Charset
 				.forName("866"));
 		try {
-			lm.getLog(fw, "fido828@conference.jabber.ru", fromDate, tillDate);
+			lm.getLog(fw, "bitcoin@conference.jabber.ru", fromDate, tillDate);
 		} catch (IOException e) {
 
 		} finally {
