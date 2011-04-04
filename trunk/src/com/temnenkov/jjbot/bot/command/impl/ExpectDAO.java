@@ -47,7 +47,7 @@ public class ExpectDAO {
 		
 		updateCmd.setString(1, item.getAuthor());
 		updateCmd.setString(2, Helper.toSqliteDate(item.getDeadTime()));
-		updateCmd.setString(3, item.getContent() );
+		updateCmd.setString(3, item.getSafeContent() );
 
 		updateCmd.executeUpdate();
 	}

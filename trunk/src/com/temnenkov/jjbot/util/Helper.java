@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Locale;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -129,5 +130,9 @@ public class Helper {
 		} finally {
 			fw.close();
 		}		
+	}
+	
+	public static String upper(String str){
+		return str == null ? "" : str.toUpperCase(new Locale("ru", "RU"));
 	}
 }

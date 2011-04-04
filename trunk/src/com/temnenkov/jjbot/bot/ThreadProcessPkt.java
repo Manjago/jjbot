@@ -1,7 +1,5 @@
 package com.temnenkov.jjbot.bot;
 
-import java.util.Locale;
-
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
@@ -42,8 +40,7 @@ public class ThreadProcessPkt implements Runnable {
 		} else {
 
 			boolean fromMultiChat = bot.getRoomManager().isFromUs(message);
-			Request request = new Request(message.getFrom(), message.getBody()
-					.toUpperCase(new Locale("ru", "RU")),
+			Request request = new Request(message.getFrom(), message.getBody(),
 					fromMultiChat ? RequestSource.MULTICHATPRIVATE
 							: RequestSource.PRIVATE);
 			Responce responce = new Responce();

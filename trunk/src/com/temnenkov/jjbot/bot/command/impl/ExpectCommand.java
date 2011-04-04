@@ -72,6 +72,7 @@ public class ExpectCommand extends CommonCommand {
 			break;
 		case PRIVATE:
 			String body = req.getBody();
+			String originalBody = req.getOriginalBody();
 
 			if (!body.startsWith(CMD))
 				return;
@@ -84,9 +85,9 @@ public class ExpectCommand extends CommonCommand {
 					resp.print(e.getMessage());
 				}
 			} else {
-				String[] tokens = body.split(" ");
-				if (tokens.length < 1 || !tokens[0].equals(CMD))
-					badCommand(resp);
+				String[] tokens = originalBody.split(" ");
+				if (tokens.length < 1 || !Helper.upper(tokens[0]).equals(CMD))
+					badCommand(req, resp);
 				else {
 					// последнее попытаемс€ в число
 					int hours = 0;
@@ -129,8 +130,8 @@ public class ExpectCommand extends CommonCommand {
 
 	}
 
-	private void badCommand(Responce resp) {
-		resp.printLn("„то-то не так с командой \"" + resp.getText() + "\"");
+	private void badCommand(Request req, Responce resp) {
+		resp.printLn("„то-то не так с командой \"" + req.getOriginalBody() + "\"");
 	}
 
 	private void expect(Responce resp) throws SQLException {
