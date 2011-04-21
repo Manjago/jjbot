@@ -11,7 +11,7 @@ public class Aliases {
 	
 	static {
 		aliases = new ArrayList<AliasPair>();
-		aliases.add(new AliasPair("помощь", "HELP "));
+		aliases.add(new AliasPair("помощь", "HELP"));
 		aliases.add(new AliasPair("баксы", "USD"));
 		aliases.add(new AliasPair("доллары", "USD"));
 		aliases.add(new AliasPair("рубли", "RUB"));
