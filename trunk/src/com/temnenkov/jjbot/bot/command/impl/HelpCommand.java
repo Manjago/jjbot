@@ -27,7 +27,7 @@ public class HelpCommand extends CommonCommand{
 
 	@Override
 	public void process(Request req, Responce resp) {
-		if ("HELP".equals(req.getBody())) {
+		if ("HELP".equals(Aliases.translate(req.getBody()))) {
 			logger.debug("это запрос помощи");
 			resp.print(getHelpString(req.getSource()));
 			resp.setStopped(true);
