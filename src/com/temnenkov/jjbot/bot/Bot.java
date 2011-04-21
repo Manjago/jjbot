@@ -27,6 +27,7 @@ import com.temnenkov.jjbot.bot.Info.InfoType;
 import com.temnenkov.jjbot.bot.Task.TaskType;
 import com.temnenkov.jjbot.bot.command.Command;
 import com.temnenkov.jjbot.bot.command.RequestSource;
+import com.temnenkov.jjbot.bot.command.impl.AliasesCommand;
 import com.temnenkov.jjbot.bot.command.impl.CourseCommand;
 import com.temnenkov.jjbot.bot.command.impl.ExpectCommand;
 import com.temnenkov.jjbot.bot.command.impl.HelpCommand;
@@ -75,6 +76,7 @@ public class Bot implements PacketListener {
 		commands.add(new CourseCommand());
 		commands.add(new MtGoxCommand());
 		commands.add(new OrderCommand());
+		commands.add(new AliasesCommand());
 		commands.add(new ExpectCommand());
 		commands.add(unknownCommand);
 

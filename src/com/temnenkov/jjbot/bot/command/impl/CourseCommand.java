@@ -29,9 +29,12 @@ public class CourseCommand extends CommonCommand {
 
 	@Override
 	public void process(Request req, Responce resp) {
-		if (Pair.isPair(req.getBody()) || "ALL".equals(req.getBody())) {
+		
+		String token = Aliases.translate(req.getBody());
+		
+		if (Pair.isPair(token) || "ALL".equals(token)) {
 			logger.debug("это курс валюты");
-			InfoWithHint res = TickerInformer.info(req.getBody());
+			InfoWithHint res = TickerInformer.info(token);
 			if (res.getInfo() == null){
 				resp.print("Извините, я - глупый бот. Я не понимаю команду \"");
 				resp.print(req.getBody());

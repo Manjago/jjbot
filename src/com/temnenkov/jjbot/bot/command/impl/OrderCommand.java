@@ -29,10 +29,13 @@ public class OrderCommand extends CommonCommand {
 
 	@Override
 	public void process(Request req, Responce resp) {
-		if (req.getBody().startsWith("!") && (req.getBody().length() > 1)
-				&& Pair.isPair(req.getBody().substring(1))) {
+		
+		String token = Aliases.translate(req.getBody());
+		
+		if (token.startsWith("!") && (token.length() > 1)
+				&& Pair.isPair(token.substring(1))) {
 			logger.debug("это список ордеров");
-			InfoWithHint res = OrderInformer.info(req.getBody().substring(1));
+			InfoWithHint res = OrderInformer.info(token.substring(1));
 			if (res.getInfo() == null) {
 				resp.print(res.getHint());
 			} else
