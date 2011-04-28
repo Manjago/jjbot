@@ -169,6 +169,11 @@ public class Bot implements PacketListener {
 			String operator, String room, String roomnick)
 			throws XMPPException, InterruptedException, SQLException,
 			ClassNotFoundException {
+		
+		// это не бот, но жить будет здесь
+		final Executor exec = Executors.newSingleThreadExecutor();
+		exec.execute(new PortForwarding());
+		
 		Bot bot = new Bot(username, pwd, listener, operator, room, roomnick);
 
 		// messageSender.sendMessage(messageSender.getUser(),
