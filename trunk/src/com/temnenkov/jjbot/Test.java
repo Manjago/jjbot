@@ -4,11 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.joda.time.DateTime;
 
 import com.temnenkov.jjbot.bot.LogManager;
+import com.temnenkov.jjbot.bot.PortForwarding;
 
 public class Test {
 
@@ -21,27 +24,31 @@ public class Test {
 	public static void main(String[] args) throws ClassNotFoundException,
 			SQLException, IOException {
 
-		LogManager lm = new LogManager();
-		lm.init();
+		final Executor exec = Executors.newSingleThreadExecutor();
+		exec.execute(new PortForwarding());
 		
-
-		DateTime now = new DateTime();
-		DateTime yesterday = new DateTime(2011,3,23,0,0,0,0);  //now.minusDays(1).minusYears(1);
-		DateTime fromDate = yesterday.withHourOfDay(0).withMinuteOfHour(0)
-				.withSecondOfMinute(0).withMillisOfSecond(0);
-		DateTime tillDate = yesterday.withHourOfDay(23).withMinuteOfHour(59)
-				.withSecondOfMinute(59).withMillisOfSecond(999);
-
-		File file = new File("/home/jjbot/test.txt");
-		FileWriterWithEncoding fw = new FileWriterWithEncoding(file, Charset
-				.forName("866"));
-		try {
-			lm.getLog(fw, "bitcoin@conference.jabber.ru", fromDate, tillDate);
-		} catch (IOException e) {
-
-		} finally {
-			fw.close();
-		}
+//		
+//		LogManager lm = new LogManager();
+//		lm.init();
+//		
+//
+//		DateTime now = new DateTime();
+//		DateTime yesterday = new DateTime(2011,3,23,0,0,0,0);  //now.minusDays(1).minusYears(1);
+//		DateTime fromDate = yesterday.withHourOfDay(0).withMinuteOfHour(0)
+//				.withSecondOfMinute(0).withMillisOfSecond(0);
+//		DateTime tillDate = yesterday.withHourOfDay(23).withMinuteOfHour(59)
+//				.withSecondOfMinute(59).withMillisOfSecond(999);
+//
+//		File file = new File("/home/jjbot/test.txt");
+//		FileWriterWithEncoding fw = new FileWriterWithEncoding(file, Charset
+//				.forName("866"));
+//		try {
+//			lm.getLog(fw, "bitcoin@conference.jabber.ru", fromDate, tillDate);
+//		} catch (IOException e) {
+//
+//		} finally {
+//			fw.close();
+//		}
 
 		// String json = HTTPRequestPoster.sendGetRequest(
 		// "http://mtgox.com/code/data/ticker.php", "");
