@@ -11,7 +11,6 @@ import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.joda.time.DateTime;
 
 import com.temnenkov.jjbot.bot.LogManager;
-import com.temnenkov.jjbot.bot.PortForwarding;
 
 public class Test {
 
@@ -24,8 +23,6 @@ public class Test {
 	public static void main(String[] args) throws ClassNotFoundException,
 			SQLException, IOException {
 
-		final Executor exec = Executors.newSingleThreadExecutor();
-		exec.execute(new PortForwarding());
 		
 //		
 //		LogManager lm = new LogManager();
