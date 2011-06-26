@@ -73,10 +73,10 @@ public class Bot implements PacketListener {
 		HelpCommand helpCommand = new HelpCommand();
 		UnknownCommand unknownCommand = new UnknownCommand();
 		commands.add(helpCommand);
-		commands.add(new CourseCommand());
-		commands.add(new MtGoxCommand());
-		commands.add(new OrderCommand());
-		commands.add(new AliasesCommand());
+		//commands.add(new CourseCommand());
+		//commands.add(new MtGoxCommand());
+		//commands.add(new OrderCommand());
+		//commands.add(new AliasesCommand());
 		commands.add(new ExpectCommand());
 		commands.add(unknownCommand);
 
@@ -169,10 +169,6 @@ public class Bot implements PacketListener {
 			String operator, String room, String roomnick)
 			throws XMPPException, InterruptedException, SQLException,
 			ClassNotFoundException {
-		
-		// это не бот, но жить будет здесь
-		final Executor exec = Executors.newSingleThreadExecutor();
-		exec.execute(new PortForwarding());
 		
 		Bot bot = new Bot(username, pwd, listener, operator, room, roomnick);
 
